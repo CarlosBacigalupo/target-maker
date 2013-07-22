@@ -1,14 +1,26 @@
 from constants import *
 import numpy as np
 
-global targetList
+global a
 
-def reduce_targetList_by_PMax(targetList, PMax):
+def reduce_targetList(targetList, constraints = {}):
     
     
-    targetList = targetList[targetList[PMaxCol] == PMax]
     
+    for item in constraints.keys():
+        const = constraints[item]
+        idx = np.where(np.array(header)==item)[0][0]
+        if len(const) == 1:
+            targetList.transpose()[targetList[idx] == const].transpose()  
+        else:
+            targetList = targetList.transpose()[targetList[idx] >= const[0]].transpose()
+            if len(targetList)>0:
+                targetList = targetList.transpose()[targetList[idx] <= const[1]].transpose() 
 
+    return targetList
+
+
+    
 def add_lumin_to_targetList(targetList):
 
     parallax = targetList[parallaxCol]
@@ -18,6 +30,7 @@ def add_lumin_to_targetList(targetList):
     dMod = 5 * np.log10(d/10)
     aMag = vMag- dMod
         
+    targetList[dCol] =  d
     targetList[luminCol] =  np.exp((SOLAR_AMAG - aMag)/2.5)
 
     return targetList
@@ -32,16 +45,19 @@ def add_mass_to_targetList(targetList):
     return targetList
 
 def add_PMax_to_tagetList(targetList):
-    
+            
     mass = targetList[massCol]
     temp = targetList[tempCol]
     lumin = targetList[luminCol]
     
-    nuMax = ((mass * ((temp) ** 3.5)) / lumin) * (NU_MAX_SUN)
+    nuMax = ((mass * ((temp) ** 3.5)) / lumin) * (NU_MAX_SUN) #in microHz
     
-    PMax = 1/nuMax
+    PMax = 1/nuMax*1e6
     
+    targetList[nuMaxCol] = nuMax
     targetList[PMaxCol] = PMax
+    targetList[PMaxHrsCol] = PMax/3600
+    targetList[PMaxDaysCol] = PMax/3600/24
     
     return targetList
 
@@ -55,26 +71,25 @@ def add_temp_to_targetList(targetList):
 
     return targetList
 
-
 def load_initial_data(catalogueFileName):
     
-    a = np.loadtxt(catalogueFileName, unpack=True )
+    a = np.genfromtxt(catalogueFileName, unpack=True, delimiter = '|', usecols = (0,3,4,5,6,7,8), missing_values = 0 )
 
     return a
-
 
 def add_columns(targetList, cols = 1):
 
      a = np.vstack((targetList, np.zeros((cols, len(targetList[0])))))
-     
+
      return  a
 
 
 def create_targetList():
     
-    targetList = load_initial_data('initial_catalogue.txt')
+    targetList = load_initial_data('hip_short.txt')
+#    targetList = load_initial_data('initial_catalogue.txt')
     
-    targetList = add_columns(targetList, cols = 4)
+    targetList = add_columns(targetList, cols = len(header_add))
     
     targetList = add_temp_to_targetList(targetList)
     
@@ -84,7 +99,10 @@ def create_targetList():
     
     targetList = add_PMax_to_tagetList(targetList)
     
-    #print targetList
-    #print 'end'
 
     return targetList
+
+
+a = create_targetList()
+b = reduce_targetList(a,{'PMaxDays':[1,100]})
+print b
