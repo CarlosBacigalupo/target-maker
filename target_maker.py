@@ -38,7 +38,7 @@ def add_lumin_to_targetList(targetList):
 def add_mass_to_targetList(targetList):
 
     lumin = targetList[luminCol]   
-    mass = lumin**(1/4.5)
+    mass = lumin**(1/4)
         
     targetList[massCol] =  mass
 
@@ -86,6 +86,7 @@ def add_columns(targetList, cols = 1):
 
 def create_targetList():
     
+#    targetList = load_initial_data('hip_short.txt.tar.gz')
     targetList = load_initial_data('hip_short.txt')
 #    targetList = load_initial_data('initial_catalogue.txt')
     
