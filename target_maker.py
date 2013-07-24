@@ -104,6 +104,6 @@ def create_targetList():
     return targetList
 
 
-a = create_targetList()
-b = reduce_targetList(a,{'PMaxDays':[1,100]})
-print b
+#a = create_targetList()
+#b = reduce_targetList(a,{'PMaxDays':[1,100]})
+#print b
