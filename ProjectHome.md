@@ -1,0 +1,1 @@
+This is a series of methods to load data, derive properties and filter by content from lists of stars.
